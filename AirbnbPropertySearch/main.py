@@ -1,12 +1,9 @@
 import streamlit as st
 import pandas as pd
 from PropertySearch import search
-from langchain.tools import Tool
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
-from langchain_core.output_parsers import StrOutputParser
 
-property_listings_df = pd.read_csv('Cleaned_Listings_final.csv')
+property_listings_df = pd.read_csv('Cleaned_Listings_final.csv',low_memory=False)
 
 
 def display_results(properties):

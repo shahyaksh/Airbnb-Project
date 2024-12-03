@@ -1,15 +1,19 @@
 import json
 import nltk
+import os
 import google.generativeai as genai
 from pinecone import Pinecone, ServerlessSpec
 from pinecone_text.sparse import BM25Encoder
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.retrievers import PineconeHybridSearchRetriever
+from dotenv import load_dotenv
+
+load_dotenv()
 
 model = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1")
 
-api_key_gemini = "AIzaSyA5wYz6fdD0SApTwtWEAKM1g358hcvSHWA"
-api_key_pinecone = "pcsk_4RvNd5_R9EQ5vNfXf3vdYknqcqUxWWi2bt6orHmi7RJi4YYBqM4ydrPQUmNjLeqLYCxnWP"
+api_key_gemini = os.getenv("GEMINI_API")
+api_key_pinecone = os.getenv("PINECONE_API")
 genai.configure(api_key=api_key_gemini)
 gemini_model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -125,7 +129,7 @@ while ensuring it aligns with the updated metadata.
 def search_similar_properties(user_input, metadata):
     filters = {}
     for key, value in metadata.items():
-        if value is not 'Unknown':
+        if value != 'Unknown':
             if key == 'City_name':
                 filters['City_name'] = {"$eq": value}
             elif key == 'accommodates':
@@ -135,7 +139,7 @@ def search_similar_properties(user_input, metadata):
             elif key == 'neighborhood_name':
                 filters['neighborhood_name'] = {"$eq": value}
 
-    if len(filters.keys()) is 0:
+    if len(filters.keys()) == 0:
         filters='None'
 
     docs = retriever.get_relevant_documents(query=user_input, metadata=filters)
