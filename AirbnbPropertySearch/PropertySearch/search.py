@@ -9,9 +9,12 @@ from langchain_community.retrievers import PineconeHybridSearchRetriever
 from dotenv import load_dotenv
 
 load_dotenv()
+print(os.getenv("GEMINI_API"))
+print(os.getenv("PINECONE_API"))
 
 model = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1")
 
+print()
 api_key_gemini = os.getenv("GEMINI_API")
 api_key_pinecone = os.getenv("PINECONE_API")
 genai.configure(api_key=api_key_gemini)
