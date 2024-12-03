@@ -9,8 +9,6 @@ from langchain_community.retrievers import PineconeHybridSearchRetriever
 from dotenv import load_dotenv
 
 load_dotenv()
-print(os.getenv("GEMINI_API"))
-print(os.getenv("PINECONE_API"))
 
 model = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1")
 
