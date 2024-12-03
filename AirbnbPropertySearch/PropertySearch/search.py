@@ -12,7 +12,6 @@ load_dotenv()
 
 model = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1")
 
-print()
 api_key_gemini = os.getenv("GEMINI_API")
 api_key_pinecone = os.getenv("PINECONE_API")
 genai.configure(api_key=api_key_gemini)
