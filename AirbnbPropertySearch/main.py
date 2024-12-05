@@ -1,9 +1,12 @@
+import os
 import streamlit as st
 import pandas as pd
 from PropertySearch import search
 from langchain_core.messages import AIMessage, HumanMessage
 
-property_listings_df = pd.read_csv('/workspaces/Airbnb-Project/AirbnbPropertySearch/Cleaned_Listings_final.csv',low_memory=False)
+parent_dir = os.path.dirname(os.path.abspath('Cleaned_Listings_final.csv'))
+path_of_file = os.path.join(parent_dir, 'Cleaned_Listings_final.csv')
+property_listings_df = pd.read_csv(path_of_file,low_memory=False)
 
 
 def display_results(properties):
