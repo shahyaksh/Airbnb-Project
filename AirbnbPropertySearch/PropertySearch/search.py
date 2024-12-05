@@ -14,7 +14,7 @@ api_key_gemini = st.secrets["GEMINI_API"]
 api_key_pinecone = st.secrets["PINECONE_API"]
 genai.configure(api_key=api_key_gemini)
 gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-
+print(gemini_model)
 try:
     nltk.data.find('C:/nltk_data/corpora/stopwords')
 except LookupError:
