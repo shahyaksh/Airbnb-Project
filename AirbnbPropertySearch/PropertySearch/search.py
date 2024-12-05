@@ -23,15 +23,17 @@ except LookupError:
 index_name = "airbnb-property-search"
 pc = Pinecone(api_key=api_key_pinecone)
 index = pc.Index(index_name)
+print(index)
 
 bm25 = BM25Encoder().default()
-# bm25.load('bm25.json')
+bm25.load('bm25.json')
 retriever = PineconeHybridSearchRetriever(embeddings=model, sparse_encoder=bm25, index=index, top_k=10)
 
 
 def call_gemini_api(prompt):
     response = gemini_model.generate_content(prompt, generation_config=genai.GenerationConfig(
         response_mime_type="application/json"))
+    print(response)
     response = json.loads(response.text)
     return response
 
@@ -140,7 +142,10 @@ def search_similar_properties(user_input, metadata):
     if len(filters.keys()) == 0:
         filters = None
     try:
+        print(user_input)
+        print(filters)
         docs = retriever.get_relevant_documents(query=user_input, metadata=filters)
+        print(docs)
     except Exception as e:
         docs=None
 
