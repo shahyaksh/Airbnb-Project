@@ -68,6 +68,7 @@ if user_input and user_input.strip():
     try:
         # Determine if it's an initial query or a refined query
         if len(st.session_state.chat_history) == 1:  # Initial query
+            print(user_input)
             st.session_state.property_metadata = search.call_gemini_api(user_input)
             docs = search.search_similar_properties(user_input,st.session_state.property_metadata)
             st.session_state.prev_description = user_input
@@ -77,8 +78,10 @@ if user_input and user_input.strip():
                 "previous_metadata": st.session_state.property_metadata,
                 "current_query": user_input
             }
+            print(query_dictionary)
             query_prompt = search.generate_refined_prompt(query_dictionary)
             refined_data = search.call_gemini_api(query_prompt)
+            print(refined_data)
             st.session_state.property_metadata = refined_data.get("updated_metadata", {})
             refined_query = refined_data.get("refined_query", user_input)
             docs = search.search_similar_properties(refined_query,st.session_state.property_metadata)
