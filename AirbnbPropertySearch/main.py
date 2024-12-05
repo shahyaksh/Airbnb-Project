@@ -3,7 +3,7 @@ import pandas as pd
 from PropertySearch import search
 from langchain_core.messages import AIMessage, HumanMessage
 
-property_listings_df = pd.read_csv('Cleaned_Listings_final.csv',low_memory=False)
+property_listings_df = pd.read_csv('/workspaces/Airbnb-Project/AirbnbPropertySearch/Cleaned_Listings_final.csv',low_memory=False)
 
 
 def display_results(properties):
