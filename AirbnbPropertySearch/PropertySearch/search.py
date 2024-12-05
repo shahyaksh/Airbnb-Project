@@ -6,14 +6,12 @@ from pinecone import Pinecone, ServerlessSpec
 from pinecone_text.sparse import BM25Encoder
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.retrievers import PineconeHybridSearchRetriever
-from dotenv import load_dotenv
-
-load_dotenv()
+import streamlit as st
 
 model = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1")
 
-api_key_gemini = os.getenv("GEMINI_API")
-api_key_pinecone = os.getenv("PINECONE_API")
+api_key_gemini = st.secrets["GEMINI_API"]
+api_key_pinecone = st.secrets["PINECONE_API"]
 genai.configure(api_key=api_key_gemini)
 gemini_model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -140,8 +138,10 @@ def search_similar_properties(user_input, metadata):
                 filters['neighborhood_name'] = {"$eq": value}
 
     if len(filters.keys()) == 0:
-        filters='None'
-
-    docs = retriever.get_relevant_documents(query=user_input, metadata=filters)
+        filters = None
+    try:
+        docs = retriever.get_relevant_documents(query=user_input, metadata=filters)
+    except Exception as e:
+        docs=None
 
     return docs
