@@ -7,13 +7,6 @@ from pinecone_text.sparse import BM25Encoder
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.retrievers import PineconeHybridSearchRetriever
 import streamlit as st
-from streamlit.logger import get_logger
-import logging
-
-LOGGER = get_logger(__name__)
-LOGGER.setLevel(logging.DEBUG)
-
-LOGGER.debug(f'start of streamlit_test')
 
 model = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1")
 
@@ -21,7 +14,7 @@ api_key_gemini = st.secrets["GEMINI_API"]
 api_key_pinecone = st.secrets["PINECONE_API"]
 genai.configure(api_key=api_key_gemini)
 gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-LOGGER.debug(gemini_model)
+
 try:
     nltk.data.find('C:/nltk_data/corpora/stopwords')
 except LookupError:
@@ -35,13 +28,13 @@ index = pc.Index(index_name)
 bm25 = BM25Encoder().default()
 #bm25.load('bm25.json')
 retriever = PineconeHybridSearchRetriever(embeddings=model, sparse_encoder=bm25, index=index, top_k=10)
-LOGGER.debug(retriever)
+
 
 def call_gemini_api(prompt):
     response = gemini_model.generate_content(prompt, generation_config=genai.GenerationConfig(
         response_mime_type="application/json"))
     response = json.loads(response.text)
-    LOGGER.debug(response)
+
     return response
 
 
@@ -149,10 +142,8 @@ def search_similar_properties(user_input, metadata):
     if len(filters.keys()) == 0:
         filters = None
     try:
-        LOGGER.debug(user_input)
         docs = retriever.get_relevant_documents(query=user_input, metadata=filters)
     except Exception as e:
-        LOGGER.debug(f"Exception:{e}")
         docs=None
 
     return docs
