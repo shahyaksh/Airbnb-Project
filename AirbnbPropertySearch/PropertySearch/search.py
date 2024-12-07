@@ -151,6 +151,7 @@ def search_similar_properties(user_input, metadata):
         LOGGER.debug(user_input)
         docs = retriever.get_relevant_documents(query=user_input, metadata=filters)
     except Exception as e:
+        LOGGER.debug(f"Exception:{e}")
         docs=None
 
     return docs
