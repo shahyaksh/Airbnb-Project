@@ -26,6 +26,7 @@ try:
     nltk.data.find('C:/nltk_data/corpora/stopwords')
 except LookupError:
     nltk.download('stopwords')
+    nltk.download('punkt_tab')
 
 index_name = "airbnb-property-search"
 pc = Pinecone(api_key=api_key_pinecone)
