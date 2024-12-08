@@ -1,8 +1,6 @@
 # Airbnb Property Search Bot
 
-**Team members: Yaksh Shah, Smit Chandi.**
-
- The real estate industry has undergone significant advancements with the integration of artificial intelligence (AI) and natural language processing (NLP) into property search systems. Traditional keyword-based search engines often struggle to understand user intent, limiting their effectiveness for descriptive or nuanced queries. Inspired by Zillow’s NLP-powered search engine, which allows users to search properties using natural language, this project aims to create an intelligent recommendation system for Airbnb listings.
+The real estate industry has undergone significant advancements with the integration of artificial intelligence (AI) and natural language processing (NLP) into property search systems. Traditional keyword-based search engines often struggle to understand user intent, limiting their effectiveness for descriptive or nuanced queries. Inspired by Zillow’s NLP-powered search engine, which allows users to search properties using natural language, this project aims to create an intelligent recommendation system for Airbnb listings.
 
 ---
 
