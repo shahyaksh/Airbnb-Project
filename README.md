@@ -1,4 +1,4 @@
-# Visual Question Answering Bot
+# Airbnb Property Search Bot
 
 **Team members: Yaksh Shah, Smit Chandi.**
 
