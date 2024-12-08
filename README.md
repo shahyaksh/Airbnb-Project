@@ -93,7 +93,7 @@ The bot not only enhances the user experience but also demonstrates the potentia
 
 ## Acknowledgments
 
-This project was completed as part of the **Intro to Data Management Cours (DS 5110)** course at **Northeastern University**.  
+This project was completed as part of the **Intro to Data Management (DS 5110)** course at **Northeastern University**.  
 
 ## Streamlit Application
 [Click here for checking out our Airbnb Property Search Bot](https://airbnb-property-search-2ygd3u4nmsqwbh9pm2psc9.streamlit.app/)
