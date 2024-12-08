@@ -22,7 +22,7 @@ We collected property data for nearly 69,000 Airbnb listings belonging to four m
 ### Preprocessing
 
 1. **Feature Selection**:
-   - There were about 56 features in the dataset but we considered only 31 which were actually usefull for 
+   - Dropping a set of predetermined columns that were deemed unnecessary for the analysis including various host-related information.
 1. **Text Cleaning:**
    - Removal of HTML tags from text columns using regex (`<.*?>`).
    - Removal of non-alphanumeric characters while preserving punctuation.
