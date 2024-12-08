@@ -77,7 +77,7 @@ The bot not only enhances the user experience but also demonstrates the potentia
 ## Challenges and Future Directions
 
 ### Challenges
-1. ** Garbage in Garbage Out**:
+1. **Garbage in Garbage Out**:
    - The results will not be proper if proper description is not provided.
 2. **Metadata**:
    - Some of the metadata of properties are not accurate due to some error while generation of description or during collection of the data so, some results will have metadata different from what it is in the     property description.
