@@ -15,14 +15,13 @@ def display_results(properties):
     for recommended_property in properties:
         property_id = recommended_property.metadata['property_id']
         image_url = property_listings_df[property_listings_df['id']==property_id]['picture_url'].values[0]
-        print(image_url)
         st.image(image_url, use_column_width=True)
         st.markdown(recommended_property.metadata["property_url"])
-        st.markdown(f"*Description:* <br>{recommended_property.page_content}", unsafe_allow_html=True)
+        st.markdown(f"**Description:** <br>{recommended_property.page_content}", unsafe_allow_html=True)
         st.markdown(f"**Accomodates:** {recommended_property.metadata['accommodates']}")
         st.markdown(f"**City:** {recommended_property.metadata['City_name']}")
         st.markdown(f"**Neighbourhood:** {recommended_property.metadata['neighborhood_name']}")
-        st.markdown(f"*Amenities:* <br>{", ".join(recommended_property.metadata['imp_amenities'])}", unsafe_allow_html=True)
+        st.markdown(f"**Amenities:** <br>{", ".join(recommended_property.metadata['imp_amenities'])}", unsafe_allow_html=True)
         st.markdown(f"**Price:** {recommended_property.metadata['price']}")
         st.markdown("---")  # Divider for visual clarity
 
