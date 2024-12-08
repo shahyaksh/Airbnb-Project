@@ -34,7 +34,7 @@ We collected property data for nearly 69,000 Airbnb listings belonging to four m
 
 ## Application Architecture
 
-![Documentation/Airbnb Property Search Application worklow.png](https://github.com/shahyaksh/Airbnb-Project/blob/main/Documentation/Airbnb%20Property%20Search%20Application%20worklow.png))
+![Documentation/Airbnb Property Search Application worklow.png](https://github.com/shahyaksh/Airbnb-Project/blob/main/Documentation/Airbnb%20Property%20Search%20Application%20worklow.png)
 
 
 **Key Features**:
