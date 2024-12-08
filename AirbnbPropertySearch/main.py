@@ -4,8 +4,8 @@ import pandas as pd
 from PropertySearch import search
 from langchain_core.messages import AIMessage, HumanMessage
 
-parent_dir = os.path.dirname(os.path.abspath('Cleaned_Listings_final.csv'))
-path_of_file = os.path.join(parent_dir, 'Cleaned_Listings_final.csv')
+parent_dir = os.path.dirname(os.path.abspath('Airbnb_Listings_Data.csv'))
+path_of_file = os.path.join(parent_dir, 'Airbnb_Listings_Data.csv')
 
 property_listings_df = pd.read_csv(path_of_file,low_memory=False)
 
@@ -21,7 +21,7 @@ def display_results(properties):
         st.markdown(f"**Accomodates:** {recommended_property.metadata['accommodates']}")
         st.markdown(f"**City:** {recommended_property.metadata['City_name']}")
         st.markdown(f"**Neighbourhood:** {recommended_property.metadata['neighborhood_name']}")
-        st.markdown(f"**Amenities:** <br>{", ".join(recommended_property.metadata['imp_amenities'])}", unsafe_allow_html=True)
+        st.markdown(f"**Amenities:** <br>{', '.join(recommended_property.metadata['imp_amenities'])}", unsafe_allow_html=True)
         st.markdown(f"**Price:** {recommended_property.metadata['price']}")
         st.markdown("---")  # Divider for visual clarity
 
