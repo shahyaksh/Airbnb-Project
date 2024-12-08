@@ -18,11 +18,11 @@ def display_results(properties):
         print(image_url)
         st.image(image_url, use_column_width=True)
         st.markdown(recommended_property.metadata["property_url"])
-        st.markdown(f"**Description:** {recommended_property.page_content}")
+        st.markdown(f"*Description:* <br>{recommended_property.page_content}", unsafe_allow_html=True)
         st.markdown(f"**Accomodates:** {recommended_property.metadata['accommodates']}")
         st.markdown(f"**City:** {recommended_property.metadata['City_name']}")
         st.markdown(f"**Neighbourhood:** {recommended_property.metadata['neighborhood_name']}")
-        st.markdown(f"**Amenities:** {recommended_property.metadata['imp_amenities']}")
+        st.markdown(f"*Amenities:* <br>{", ".join(recommended_property.metadata['imp_amenities'])}", unsafe_allow_html=True)
         st.markdown(f"**Price:** {recommended_property.metadata['price']}")
         st.markdown("---")  # Divider for visual clarity
 
