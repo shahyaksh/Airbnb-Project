@@ -26,7 +26,7 @@ pc = Pinecone(api_key=api_key_pinecone)
 index = pc.Index(index_name)
 
 bm25 = BM25Encoder().default()
-#bm25.load('bm25.json')
+bm25.load('./bm25.json')
 retriever = PineconeHybridSearchRetriever(embeddings=model, sparse_encoder=bm25, index=index, top_k=10)
 
 
