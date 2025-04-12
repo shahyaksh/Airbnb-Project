@@ -1,219 +1,127 @@
 """
-Property Search Module
+Airbnb Property Search Bot - Main Application File
 
-This module handles the AI-powered property search functionality. It includes:
-- Integration with Google's Gemini AI for query understanding
-- Vector search using Pinecone and HuggingFace embeddings
-- BM25 text matching for hybrid search capabilities
-- Prompt generation for initial and refined searches
+This Streamlit application provides a conversational interface for users to search
+for Airbnb properties based on natural language descriptions. It uses AI to understand
+user preferences and find matching properties from a dataset.
 
-The module extracts structured metadata from natural language queries and
-uses this to find relevant properties that match the user's criteria.
+The app maintains conversation history and allows for iterative refinement of search
+criteria through continued conversation.
 """
 
-import json
-import nltk
 import os
-import google.generativeai as genai
-from pinecone import Pinecone, ServerlessSpec
-from pinecone_text.sparse import BM25Encoder
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.retrievers import PineconeHybridSearchRetriever
 import streamlit as st
-from streamlit.logger import get_logger
-import logging
+import pandas as pd
+from PropertySearch import search
+from langchain_core.messages import AIMessage, HumanMessage
 
-# Configure logging
-LOGGER = get_logger(__name__)
-LOGGER.setLevel(logging.DEBUG)
-LOGGER.debug(f'start of streamlit_test')
-
-
-model = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1",
-                              cache_folder='./PropertySearch')
-
-# Set up Gemini AI
-api_key_gemini = st.secrets["GEMINI_API"]
-api_key_pinecone = st.secrets["PINECONE_API"]
-genai.configure(api_key=api_key_gemini)
-gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-LOGGER.debug(gemini_model)
-
-# Ensure NLTK data is available for BM25
-try:
-    nltk.data.find('C:/nltk_data/corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords')
-
-# Set up Pinecone vector database
-index_name = "airbnb-property-search"
-pc = Pinecone(api_key=api_key_pinecone)
-index = pc.Index(index_name)
-
-# Initialize BM25 encoder for text matching
-bm25 = BM25Encoder().default()
-bm25.load('bm25.json')
-
-# Create hybrid retriever combining vector and sparse search
-retriever = PineconeHybridSearchRetriever(embeddings=model, sparse_encoder=bm25, index=index, top_k=10)
-LOGGER.debug(retriever)
+# Load property listings data from CSV
+parent_dir = os.path.dirname(os.path.abspath('Cleaned_Listings_final.csv'))
+path_of_file = os.path.join(parent_dir, 'Cleaned_Listings_final.csv')
+print(parent_dir)
+property_listings_df = pd.read_csv(path_of_file, low_memory=False)
 
 
-def call_gemini_api(prompt):
+def display_results(properties):
     """
-    Call Google's Gemini AI to process the provided prompt.
-
+    Display recommended properties with details.
+    
     Args:
-        prompt (str): The prompt text to send to Gemini API
-
-    Returns:
-        dict: Parsed JSON response from Gemini API
+        properties (list): List of property document objects from the retriever
+                          Each containing metadata and content for a property
     """
-    response = gemini_model.generate_content(prompt, generation_config=genai.GenerationConfig(
-        response_mime_type="application/json"))
-    response = json.loads(response.text)
-    LOGGER.debug(response)
-    return response
+    for recommended_property in properties:
+        property_id = recommended_property.metadata['property_id']
+        image_url = property_listings_df[property_listings_df['id']==property_id]['picture_url'].values[0]
+        print(image_url)
+        
+        # Display property information
+        st.image(image_url, use_column_width=True)
+        st.markdown(recommended_property.metadata["property_url"])
+        st.markdown(f"**Description:** {recommended_property.page_content}")
+        st.markdown(f"**Accomodates:** {recommended_property.metadata['accommodates']}")
+        st.markdown(f"**City:** {recommended_property.metadata['City_name']}")
+        st.markdown(f"**Neighbourhood:** {recommended_property.metadata['neighborhood_name']}")
+        st.markdown(f"**Amenities:** {recommended_property.metadata['imp_amenities']}")
+        st.markdown(f"**Price:** {recommended_property.metadata['price']}")
+        st.markdown("---")  # Divider for visual clarity
 
 
-def generate_initial_prompt(user_input: str):
-    """
-    Generate the initial prompt for Gemini AI to extract metadata from user input.
+# Initialize session state for storing conversation and search context
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        AIMessage(content="Hello, I am an Airbnb Property Search bot. How can I help you?"),
+    ]
+    st.session_state.property_metadata = {}
+    st.session_state.prev_description = ""
+    st.session_state.results = []
 
-    Args:
-        user_input (str): The user's property search description
+# Streamlit app configuration
+st.set_page_config(page_title='Airbnb Property Search Bot', page_icon='🤖')
+st.title(':blue[Airbnb Property Search Bot] 🤖')
+st.subheader('Your :green[AI Assistant] for finding ideal properties', divider='rainbow')
+st.caption("Note: This bot can make mistakes. Please verify important information.")
 
-    Returns:
-        str: Formatted prompt for Gemini API
-    """
-    prompt = """
-    You are a professional real estate copywriter and metadata extractor.
-    Your task is to generate engaging descriptions for properties while also providing structured metadata for each property.
-
-    ### **Task 1: Property Description**
-    Create a detailed, inviting description for each property based on the provided information. Highlight unique features, amenities, and location benefits in an appealing tone. Ensure to include details such as city, neighborhood, number of guests the property can accommodate, number of bedrooms and bathrooms, and the price (if not `-1`).
-
-    ### **Task 2: Metadata Extraction**
-    Extract structured metadata for each property in the following format:
-    ```json
-    {
-      "City_name": "[City Name, or 'Unknown' if not specified]",
-      "neighborhood_name": "[Neighborhood Name, or 'Unknown' if not specified]",
-      "imp_amenities": ["[List of amenities, such as Wi-Fi, Pool, Kitchen, etc., inferred or leave empty if not provided]"],
-      "accommodates": "[Number of guests the property can accommodate, or 'Unknown' if not specified]",
-      "bathrooms": "[Number of bathrooms, or 'Unknown' if not specified]",
-      "bedrooms": "[Number of bedrooms, or 'Unknown' if not specified]",
-      "price": "[Price range in the format '<=100', '<=200', '<=300', etc., or 'Unknown' if not specified]"
-    }
-    ```
-    Example output:
-    ```json
-    {"Properties":[
-    {
-        "Property ID": "ID of the property",
-        "description": "Located in the heart of San Diego's vibrant Gaslamp Quarter, this chic apartment is perfect for travelers looking for a modern retreat. With 2 bedrooms, 2 bathrooms, and space for 4 guests, the property offers amenities like Wi-Fi, a fully equipped kitchen, and a rooftop pool. At $150 per night, enjoy easy access to local attractions such as the San Diego Zoo and Seaport Village.",
-        "metadata": {
-          "City_name": "San Diego",
-          "neighborhood_name": "Gaslamp Quarter",
-          "imp_amenities": ["Wi-Fi", "Kitchen", "Rooftop Pool", "Air Conditioning", "TV", "Parking", "Washer", "Dryer", "Gym", "Balcony"],
-          "accommodates": 4,
-          "bathrooms": "2",
-          "bedrooms": 2,
-          "price": "<=200"
-        }
-
-    }, ...]
-
-    ```
-
-    ### **General Rules**
-    1. If any data is missing or cannot be inferred, mark it as `'Unknown'`.
-    2. For the `price`, categorize into ranges like `<100`, `<200`, `<300`, etc., based on the given data. If no price is provided, use `'Unknown'`.
-
-    """
-    return f"{prompt} Here is the property description provided by the user {user_input}"
+# Display chat history
+for message in st.session_state.chat_history:
+    if isinstance(message, HumanMessage):
+        with st.chat_message("Human"):
+            st.markdown(message.content)
+    else:
+        with st.chat_message("AI"):
+            try:
+                st.markdown(message.content)
+                display_results(message.metadata['properties'])
+            except:
+                continue
 
 
-def generate_refined_prompt(input_data: dict):
-    """
-    Generate a prompt for refining a search based on previous search context and new input.
+# Accept user input
+user_input = st.chat_input("Write a short description of what you are looking for in an Airbnb property.")
 
-    Args:
-        input_data (dict): Dictionary containing previous query, metadata, and current query
+if user_input and user_input.strip():
+    # Add user input to chat history
+    st.session_state.chat_history.append(HumanMessage(user_input))
+    with st.chat_message("Human"):
+        st.markdown(user_input)
 
-    Returns:
-        str: Formatted prompt for Gemini API
-    """
-    prompt = f"""
-    You are an intelligent assistant that updates metadata and generates a refined query based on structured input. 
-
-    Your tasks are:
-
-    1. Extract new details from the `current_query` and update the `previous_metadata`. If a detail is not mentioned in 
-    the `current_query`, retain the value from the `previous_metadata`.
-    2. Generate a refined query by combining the `prev_query` and the `current_query` while ensuring it aligns with the 
-    updated metadata..
-
-### **Task 1: Property Description**
-Create a detailed, inviting description for each property based on the provided information. 
-Highlight unique features, amenities, and location benefits in an appealing tone. Ensure to include details such as city,
-neighborhood, number of guests the property can accommodate, number of bedrooms and bathrooms, and the price
-Generate a refined query by combining the `prev_query` and the `current_query` 
-while ensuring it aligns with the updated metadata.
-
-    ### Input:
-    {input_data}
-
-    ### Output:
-    Respond in this exact JSON format:
-    {{
-      "updated_metadata": {{
-        "City_name": "[Updated City Name or 'Unknown']",
-        "neighborhood_name": "[Updated Neighborhood Name or 'Unknown']",
-        "imp_amenities": ["[Updated list of amenities]"],
-        "accommodates": "[Updated number of guests or 'Unknown']",
-        "bathrooms": "[Updated number of bathrooms or 'Unknown']",
-        "bedrooms": "[Updated number of bedrooms or 'Unknown']",
-        "price": "[Updated price(<=100,<=200,<=300) or 'Unknown']"
-      }},
-      "refined_query": "[Refined query in natural language based on the updated metadata]"
-    }}
-    """
-    return prompt
-
-
-def search_similar_properties(user_input, metadata):
-    """
-    Search for properties matching the user's criteria using hybrid search.
-
-    Args:
-        user_input (str): User's search query or description
-        metadata (dict): Structured metadata extracted from the query
-
-    Returns:
-        list: List of document objects for matching properties, or None if no matches
-    """
-    # Build filters based on metadata
-    filters = {}
-    for key, value in metadata.items():
-        if value != 'Unknown':
-            if key == 'City_name':
-                filters['City_name'] = {"$eq": value}
-            elif key == 'accommodates':
-                filters['accommodates'] = {"$gte": value}
-            elif key == 'price':
-                filters['price'] = {"$eq": value}
-            elif key == 'neighborhood_name':
-                filters['neighborhood_name'] = {"$eq": value}
-
-    if len(filters.keys()) == 0:
-        filters = None
-
-    # Perform the search
     try:
-        LOGGER.debug(user_input)
-        docs = retriever.get_relevant_documents(query=user_input, metadata=filters)
-    except Exception as e:
-        docs = None
+        # Determine if it's an initial query or a refined query
+        if len(st.session_state.chat_history) == 1:  # Initial query
+            # First interaction - extract metadata from user query
+            st.session_state.property_metadata = search.call_gemini_api(user_input)
+            docs = search.search_similar_properties(user_input, st.session_state.property_metadata)
+            st.session_state.prev_description = user_input
+        else:  # Refined query
+            # Follow-up interaction - refine the previous search
+            query_dictionary = {
+                "prev_query": st.session_state.prev_description,
+                "previous_metadata": st.session_state.property_metadata,
+                "current_query": user_input
+            }
+            # Generate refined prompt considering both previous and current queries
+            query_prompt = search.generate_refined_prompt(query_dictionary)
+            refined_data = search.call_gemini_api(query_prompt)
+            st.session_state.property_metadata = refined_data.get("updated_metadata", {})
+            refined_query = refined_data.get("refined_query", user_input)
+            docs = search.search_similar_properties(refined_query, st.session_state.property_metadata)
+            st.session_state.prev_description = refined_query
 
-    return docs
+        if docs:
+            # Save results to session state
+            st.session_state.results.append(docs)
+
+            # Display the current results
+            with st.chat_message("AI"):
+                st.markdown("Here are the recommended properties based on your input:")
+                display_results(docs)
+            st.session_state.chat_history.append(
+                AIMessage(content="Here are the recommended properties based on your input:",
+                          metadata={"properties": docs}))
+        else:
+            with st.chat_message("AI"):
+                st.markdown("No matching properties found. Please refine your query.")
+            st.session_state.chat_history.append(
+                AIMessage(content="No matching properties found. Please refine your query."))
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
