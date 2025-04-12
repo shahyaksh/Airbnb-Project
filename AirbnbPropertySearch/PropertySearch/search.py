@@ -42,6 +42,7 @@ try:
     nltk.data.find('C:/nltk_data/corpora/stopwords')
 except LookupError:
     nltk.download('stopwords')
+    nltk.download('punkt_tab')
 
 # Set up Pinecone vector database
 index_name = "airbnb-property-search"
