@@ -49,7 +49,9 @@ pc = Pinecone(api_key=api_key_pinecone)
 index = pc.Index(index_name)
 
 # Initialize BM25 encoder for text matching
-bm25 = BM25Encoder()
+bm25 = BM25Encoder().default()
+bm25.load('bm25.json')
+
 
 # Create hybrid retriever combining vector and sparse search
 retriever = PineconeHybridSearchRetriever(embeddings=model, sparse_encoder=bm25, index=index, top_k=10)
