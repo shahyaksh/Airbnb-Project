@@ -28,8 +28,7 @@ LOGGER = get_logger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 LOGGER.debug(f'start of streamlit_test')
 
-# Initialize embedding model for semantic search
-os.mkdir('')
+
 model = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1",
                               cache_folder='./PropertySearch')
 
