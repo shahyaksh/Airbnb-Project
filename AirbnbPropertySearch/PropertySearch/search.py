@@ -213,5 +213,6 @@ def search_similar_properties(user_input, metadata):
         docs = retriever.get_relevant_documents(query=user_input, metadata=filters)
     except Exception as e:
         docs = None
+        LOGGER.debug(e)
 
     return docs
