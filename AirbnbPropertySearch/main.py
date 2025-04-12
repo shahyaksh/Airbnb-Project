@@ -16,8 +16,8 @@ from PropertySearch import search
 from langchain_core.messages import AIMessage, HumanMessage
 
 # Load property listings data from CSV
-parent_dir = os.path.dirname(os.path.abspath('Cleaned_Listings_final.csv'))
-path_of_file = os.path.join(parent_dir, 'Cleaned_Listings_final.csv')
+parent_dir = os.path.dirname(os.path.abspath('Airbnb_Listings_Data.csv'))
+path_of_file = os.path.join(parent_dir, 'Airbnb_Listings_Data.csv')
 print(parent_dir)
 property_listings_df = pd.read_csv(path_of_file, low_memory=False)
 
