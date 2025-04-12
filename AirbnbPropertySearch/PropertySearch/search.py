@@ -50,7 +50,6 @@ index = pc.Index(index_name)
 
 # Initialize BM25 encoder for text matching
 bm25 = BM25Encoder().default()
-bm25.load('bm25.json')
 
 
 # Create hybrid retriever combining vector and sparse search
